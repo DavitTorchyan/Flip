@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 import "./Token1.sol";
 import "./Token2.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
@@ -44,10 +44,12 @@ contract Flip {
 
         if (token == address(token1)) {
             // token1.approve(address(this), amount);
+            console.log("deposit token1");
             token1.transferFrom(msg.sender, address(this), amount);
             pool.token1TotalAmount += amount;
         } else {
             // token2.approve(address(router), amount);
+            console.log("deposit token2");
             token2.transferFrom(msg.sender, address(this), amount);
             pool.token2TotalAMount += amount;
         }
@@ -62,6 +64,9 @@ contract Flip {
         //     block.timestamp - pool.creationTime >= 1 days,
         //     "You have to wait till a day is passed!"
         // );
+
+        token1.approve(UNISWAP_V2_ROUTER, pool.token1TotalAmount);
+        token2.approve(UNISWAP_V2_ROUTER, pool.token2TotalAMount);
 
         router.addLiquidity(
             address(token1),
@@ -93,18 +98,18 @@ contract Flip {
         path2[1] = address(token1);
 
         if (randomNumber <= token1WinProb) {
-            router.swapExactTokensForTokens(
+            router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                 pool.token2TotalAMount,
-                pool.token2TotalAMount / 2,
+                0,
                 path1,
                 address(this),
                 block.timestamp + 1 days
             );
             emit Data(token1WinProb, 100 - token1WinProb, randomNumber);
         } else {
-            router.swapExactTokensForTokens(
+            router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                 pool.token1TotalAmount,
-                pool.token1TotalAmount / 2,
+                0,
                 path2,
                 address(this),
                 block.timestamp + 1 days

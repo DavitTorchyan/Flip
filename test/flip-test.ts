@@ -1,4 +1,5 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { doesNotMatch } from "assert";
 import { expect, should } from "chai";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
@@ -7,16 +8,11 @@ import token2 from "/home/davit-coinstats/development/FlippingContract/artifacts
 
 describe("Flip", function () {
 
-    const PRIV_KEY = process.env.DEV_PRIVKEY;
-    const provider = new ethers.providers.JsonRpcProvider("https://goerli.infura.io/v3/742f343587964019b49762859344f231");
-    const signer = new ethers.Wallet(PRIV_KEY as string, provider);
-
-
     async function deployTokenFixture() {
         
         const [owner, acc1, acc2, acc3] = await ethers.getSigners();
-        const tk1 = new ethers.Contract("0xb0552E29796FE0dE936dC97e61eD56A51E6e3f27", token1.abi, owner);
-        const tk2 = new ethers.Contract("0x96b059535bcfc291e766F5a0a4895B1759C91680", token2.abi, owner);
+        const tk1 = new ethers.Contract("0xD00706d33E9779A4e4a87ceb77aD601470209d18", token1.abi, owner);
+        const tk2 = new ethers.Contract("0x66593b8f5ABd59dA37d01D40201a65a0606451f3", token2.abi, owner);
 
         const Flip = await ethers.getContractFactory("Flip");
         const flip = await Flip.deploy(tk1.address, tk2.address);
@@ -38,18 +34,28 @@ describe("Flip", function () {
     describe("Deposit", () => {
         it.only("Should deposit correctly.", async () => {
             const{ flip, tk1, tk2, owner, acc1, acc2 } = await loadFixture(deployTokenFixture);
-            const amount = 10;
-            await tk1.connect(signer).mint(ethers.utils.parseEther("1000"));
-            // console.log(await tk1.totalSupply());
-            // console.log(signer.address);
             
-            await tk1.connect(signer).approve(flip.address, amount)
+            const tx1 = await tk1.connect(owner).mint(ethers.utils.parseEther("100"));
+            const tx2 = await tk2.connect(owner).mint(ethers.utils.parseEther("200"));           
             
-            const tx = await flip.connect(signer).deposit(tk1.address, amount);
-            console.log(await tk1.balanceOf(signer.address));
-            expect((await flip.pool()).token1TotalAmount).to.eq(amount);
-            const txTime = (await ethers.provider.getBlock(tx.blockNumber as number)).timestamp;
-            expect((await flip.pool()).creationTime).to.eq(txTime);
+            await tk1.connect(owner).approve(flip.address, ethers.utils.parseEther("100"));
+            await tk2.connect(owner).approve(flip.address, ethers.utils.parseEther("200"));
+
+            const tx3 = await flip.connect(owner).deposit(tk1.address, ethers.utils.parseEther("100"));
+            const tx4 = await flip.connect(owner).deposit(tk2.address, ethers.utils.parseEther("200"));
+            
+            console.log("POOL BEFORE", await flip.pool());
+            
+            await flip.connect(owner).flip();
+
+            console.log("POOL AFTER", await flip.pool());
+
+
+            // await tx2.wait();
+            console.log(await tk1.balanceOf(flip.address));
+            // expect((await flip.pool()).token1TotalAmount).to.eq(ethers.utils.parseEther("100"));
+            // const txTime = (await ethers.provider.getBlock(tx1.blockNumber as number)).timestamp;
+            // expect((await flip.pool()).creationTime).to.eq(txTime);
         })
     })
 

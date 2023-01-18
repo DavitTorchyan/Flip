@@ -18,12 +18,26 @@ async function main() {
 
   const signer = new ethers.Wallet(PRIV_KEY as string, provider);
 
-  const tk1 = new ethers.Contract("0xb0552E29796FE0dE936dC97e61eD56A51E6e3f27", token1.abi, signer);
-  const tk2 = new ethers.Contract("0x96b059535bcfc291e766F5a0a4895B1759C91680", token2.abi, signer);
-  const flip = new ethers.Contract("0x6850832D05C67AC00F17EB59F2Ac1EaeadBc476c", flipContract.abi, signer);
-  console.log("BALANCE 1 BEFORE: ", (await tk1.balanceOf(signer.address)).toString());
-  const tx1 = await tk1.connect(signer).mint(ethers.utils.parseEther("1000"));
-  console.log("BALANCE 1 AFTER: ", (await tk1.balanceOf(signer.address)).toString());
+  const tk1 = new ethers.Contract("0xD00706d33E9779A4e4a87ceb77aD601470209d18", token1.abi, signer);
+  const tk2 = new ethers.Contract("0x66593b8f5ABd59dA37d01D40201a65a0606451f3", token2.abi, signer);
+  const flip = new ethers.Contract("0xC8f86e61AAA46ba75DeB23Fe58bD0493404AB055", flipContract.abi, signer);
+  // console.log("BALANCE 1 BEFORE: ", (await tk1.balanceOf(signer.address)).toString());
+  // const tx1 = await tk1.connect(signer).mint(ethers.utils.parseEther("100"));
+  // await tx1.wait();
+  // const tx2 = await tk2.connect(signer).mint(ethers.utils.parseEther("200"));
+  // await tx2.wait();
+  const tx3 = await tk1.connect(signer).approve(flip.address, ethers.utils.parseEther("200"));
+  await tx3.wait();
+  const tx4 = await tk2.connect(signer).approve(flip.address, ethers.utils.parseEther("100"));
+  await tx4.wait();
+  const tx5 = await tk1.connect(signer).transferFrom(signer.address, flip.address, ethers.utils.parseEther("200"));
+  await tx5.wait();
+  const tx6 = await tk2.connect(signer).transferFrom(signer.address, flip.address, ethers.utils.parseEther("100"));
+  await tx6.wait();
+
+  console.log("BALANCE OF TOKEN2: ", (await tk2.balanceOf(flip.address)).toString());
+  
+  console.log("BALANCE OF TOKEN1: ", (await tk1.balanceOf(flip.address)).toString());
 
 
 //   console.log("BALANCE 2 BEFORE: ", (await tk1.balanceOf(acc2.address)).toString())

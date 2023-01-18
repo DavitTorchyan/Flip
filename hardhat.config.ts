@@ -28,7 +28,7 @@ const config: HardhatUserConfig = {
     },
     goerli: {
       url: process.env.GOERLI_URL,
-      accounts: process.env.DEV_PRIVKEY ? [process.env.DEV_PRIVKEY]: [],
+      accounts: process.env.DEV_PRIVKEY ? [process.env.DEV_PRIVKEY]: [],  
     },
     mumbai: {
       url: process.env.MUMBAI_URL,
@@ -36,7 +36,7 @@ const config: HardhatUserConfig = {
     }
   },
   etherscan: {
-    apiKey: process.env.POLYGONSCAN_APIKEY
+    apiKey: process.env.ETHERSCAN_API_KEY
   }
 };
 
