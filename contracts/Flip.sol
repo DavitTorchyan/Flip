@@ -68,6 +68,17 @@ contract Flip {
         token1.approve(UNISWAP_V2_ROUTER, pool.token1TotalAmount);
         token2.approve(UNISWAP_V2_ROUTER, pool.token2TotalAMount);
 
+        uint256 randomNumber = (
+            uint256(
+                keccak256(
+                    abi.encodePacked(msg.sender, block.number, block.timestamp)
+                )
+            )
+        ) % 100;
+
+        uint256 token1WinProb = (pool.token1TotalAmount * 100) /
+            (pool.token1TotalAmount + pool.token2TotalAMount);
+
         router.addLiquidity(
             address(token1),
             address(token2),
@@ -78,15 +89,6 @@ contract Flip {
             address(this),
             block.timestamp + 1 days
         );
-        uint256 randomNumber = (
-            uint256(
-                keccak256(
-                    abi.encodePacked(msg.sender, block.number, block.timestamp)
-                )
-            )
-        ) % 100;
-        uint256 token1WinProb = (pool.token1TotalAmount /
-            (pool.token1TotalAmount + pool.token2TotalAMount)) * 100;
 
         address[] memory path1;
         address[] memory path2;
@@ -98,6 +100,7 @@ contract Flip {
         path2[1] = address(token1);
 
         if (randomNumber <= token1WinProb) {
+            console.log("token1 won");
             router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                 pool.token2TotalAMount,
                 0,
@@ -107,6 +110,7 @@ contract Flip {
             );
             emit Data(token1WinProb, 100 - token1WinProb, randomNumber);
         } else {
+            console.log("token2 won");
             router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                 pool.token1TotalAmount,
                 0,
