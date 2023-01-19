@@ -4,13 +4,15 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 import "./Token1.sol";
 import "./Token2.sol";
+import "./Swap.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
-contract Flip {
-    address private constant UNISWAP_V2_ROUTER =
-        0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    Token1 public token1;
-    Token2 public token2;
+contract Flip is Swap {
+    // address public constant UNISWAP_V2_ROUTER =
+    //     0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    Token1 public tokena;
+    Token2 public tokenb;
+
 
     struct Pool {
         uint256 token1TotalAmount;
@@ -21,15 +23,17 @@ contract Flip {
     event Data(uint256 winProb1, uint256 winProb2, uint256 randomNumber); 
 
     Pool public pool;
-    IUniswapV2Router02 private router = IUniswapV2Router02(UNISWAP_V2_ROUTER);
+    // IUniswapV2Router02 public router = IUniswapV2Router02(UNISWAP_V2_ROUTER);
 
-    constructor(Token1 _token1, Token2 _token2) {
-        require(
-            address(_token1) != address(0) && address(_token2) != address(0),
-            "Token address can not be address zero!"
-        );
-        token1 = _token1;
-        token2 = _token2;
+    constructor(Token1 _tokena, Token2 _tokenb) Swap(_tokena, _tokenb) {
+        tokena = _tokena;
+        tokenb = _tokenb;
+        // require(
+        //     address(_token1) != address(0) && address(_token2) != address(0),
+        //     "Token address can not be address zero!"
+        // );
+        // token1 = _token1;
+        // token2 = _token2;
     }
 
     function deposit(address token, uint256 amount) public {
@@ -65,8 +69,12 @@ contract Flip {
         //     "You have to wait till a day is passed!"
         // );
 
-        token1.approve(UNISWAP_V2_ROUTER, pool.token1TotalAmount);
-        token2.approve(UNISWAP_V2_ROUTER, pool.token2TotalAMount);
+        token1.approve(UNISWAP_V2_ROUTER, pool.token1TotalAmount * 2);
+        token2.approve(UNISWAP_V2_ROUTER, pool.token2TotalAMount * 2);
+
+        console.log("allowance token1 BEFORE owner => router", token1.allowance(address(this), UNISWAP_V2_ROUTER));
+        console.log("allowance token2 BEFORE owner => router", token2.allowance(address(this), UNISWAP_V2_ROUTER));
+
 
         uint256 randomNumber = (
             uint256(
@@ -90,6 +98,9 @@ contract Flip {
             block.timestamp + 1 days
         );
 
+        console.log("allowance token1 AFTER owner => router", token1.allowance(address(this), UNISWAP_V2_ROUTER));
+        console.log("allowance token2 AFTER owner => router", token2.allowance(address(this), UNISWAP_V2_ROUTER));
+
         address[] memory path1;
         address[] memory path2;
         path1 = new address[](2);
@@ -101,25 +112,44 @@ contract Flip {
 
         if (randomNumber <= token1WinProb) {
             console.log("token1 won");
-            router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                pool.token2TotalAMount,
+            // console.log(msg.sender);
+            // token1.approve(UNISWAP_V2_ROUTER, pool.token1TotalAmount);
+            // token1.transferFrom(msg.sender, UNISWAP_V2_ROUTER, pool.token1TotalAmount);
+
+            // router.swapExactTokensForTokens(
+            //     pool.token2TotalAMount / 2,
+            //     0,
+            //     path1,
+            //     address(this),
+            //     block.timestamp + 300
+            // );
+            swap(address(token1),
+                pool.token1TotalAmount,
                 0,
                 path1,
                 address(this),
-                block.timestamp + 1 days
-            );
+                block.timestamp + 300);
             emit Data(token1WinProb, 100 - token1WinProb, randomNumber);
         } else {
             console.log("token2 won");
-            router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                pool.token1TotalAmount,
+            // console.log(msg.sender);
+            // token2.approve(UNISWAP_V2_ROUTER, pool.token2TotalAMount);
+            // token2.transferFrom(msg.sender, UNISWAP_V2_ROUTER, pool.token2TotalAMount);
+            
+            // router.swapExactTokensForTokens(
+            //     pool.token1TotalAmount / 2,
+            //     0,
+            //     path2,
+            //     address(this),
+            //     block.timestamp + 300
+            // );
+            swap(address(token2),
+                pool.token2TotalAMount,
                 0,
                 path2,
                 address(this),
-                block.timestamp + 1 days
-            );
+                block.timestamp + 300);
             emit Data(100 - token1WinProb, token1WinProb, randomNumber);
-
         }
 
         pool.token1TotalAmount = 0;

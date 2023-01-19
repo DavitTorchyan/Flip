@@ -17,6 +17,9 @@ describe("Flip", function () {
         const Flip = await ethers.getContractFactory("Flip");
         const flip = await Flip.deploy(tk1.address, tk2.address);
 
+        // const Swap = await ethers.getContractFactory("Swap");
+        // const swap = await Swap.deploy(tk1.address, tk2.address);
+
         return { flip, tk1, tk2, owner, acc1, acc2, acc3 };
     }
 
@@ -35,24 +38,38 @@ describe("Flip", function () {
         it.only("Should deposit correctly.", async () => {
             const{ flip, tk1, tk2, owner, acc1, acc2 } = await loadFixture(deployTokenFixture);
             
-            const tx1 = await tk1.connect(owner).mint(ethers.utils.parseEther("100"));
-            const tx2 = await tk2.connect(owner).mint(ethers.utils.parseEther("200"));           
+            const tx1 = await tk1.connect(owner).mint(ethers.utils.parseEther("200"));
+            const tx2 = await tk2.connect(owner).mint(ethers.utils.parseEther("400"));           
             
-            await tk1.connect(owner).approve(flip.address, ethers.utils.parseEther("100"));
-            await tk2.connect(owner).approve(flip.address, ethers.utils.parseEther("200"));
+            await tk1.connect(owner).approve(flip.address, ethers.utils.parseEther("400"));
+            await tk2.connect(owner).approve(flip.address, ethers.utils.parseEther("800"));
 
             const tx3 = await flip.connect(owner).deposit(tk1.address, ethers.utils.parseEther("100"));
             const tx4 = await flip.connect(owner).deposit(tk2.address, ethers.utils.parseEther("200"));
             
             console.log("POOL BEFORE", await flip.pool());
             
+            console.log(await tk1.balanceOf(flip.address));
+            console.log(await tk2.balanceOf(flip.address));
+
+            const router = await flip.UNISWAP_V2_ROUTER();
+            console.log("msg.sender token1 balance: ", await tk1.balanceOf(owner.address));
+            console.log("msg.sender token2 balance: ", await tk2.balanceOf(owner.address));
+            
+            console.log("router token1 balance: ", await tk1.balanceOf(router));
+            console.log("router token2 balance: ", await tk2.balanceOf(router));
+            
+            // console.log("router address: ", router);
+            // console.log("owner address: ", owner.address);
+            
+            // await tk1.connect(owner).approve(router, ethers.utils.parseEther("100"));
+            // await tk2.connect(owner).approve(router, ethers.utils.parseEther("200"));
             await flip.connect(owner).flip();
 
             console.log("POOL AFTER", await flip.pool());
 
 
             // await tx2.wait();
-            console.log(await tk1.balanceOf(flip.address));
             // expect((await flip.pool()).token1TotalAmount).to.eq(ethers.utils.parseEther("100"));
             // const txTime = (await ethers.provider.getBlock(tx1.blockNumber as number)).timestamp;
             // expect((await flip.pool()).creationTime).to.eq(txTime);
