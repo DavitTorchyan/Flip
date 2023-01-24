@@ -73,7 +73,8 @@ describe("Flip", function () {
             const { flip, tk1, tk2, owner } = await loadFixture(
                 deployFlipFixture
             );
-            await expect(flip.connect(owner).deposit(ethers.constants.AddressZero, 100)).to.be.revertedWith("Deposited token must be either token1 or token2!");
+            await expect(flip.connect(owner).deposit(ethers.constants.AddressZero, 100)
+                ).to.be.revertedWith("Deposited token must be either token1 or token2!");
         })
 
     });
