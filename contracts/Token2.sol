@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 // import "hardhat/console.sol";
-import "./ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Token2 is ERC20{
     constructor() ERC20("Token2", "T2") {

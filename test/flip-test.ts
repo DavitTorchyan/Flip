@@ -41,9 +41,7 @@ describe("Flip", function () {
 
     describe("Deposit", () => {
         it("Should deposit correctly.", async () => {
-            const { flip, tk1, tk2, owner } = await loadFixture(
-                deployFlipFixture
-            );
+            const { flip, tk1, tk2, owner } = await loadFixture(deployFlipFixture);
             await tk1.connect(owner).mint(ethers.utils.parseEther("100"));
             await tk2.connect(owner).mint(ethers.utils.parseEther("100"));
 
@@ -70,12 +68,11 @@ describe("Flip", function () {
         });
 
         it("Should revert when trying to deposit another token.", async () => {
-            const { flip, tk1, tk2, owner } = await loadFixture(
-                deployFlipFixture
-            );
-            await expect(flip.connect(owner).deposit(ethers.constants.AddressZero, 100)).to.be.revertedWith("Deposited token must be either token1 or token2!");
-        })
-
+            const { flip, tk1, tk2, owner } = await loadFixture(deployFlipFixture);
+            await expect(
+                flip.connect(owner).deposit(ethers.constants.AddressZero, 100)
+            ).to.be.revertedWith("Deposited token must be either token1 or token2!");
+        });
     });
 
     describe("Adding Liquidity", () => {
@@ -119,11 +116,11 @@ describe("Flip", function () {
             const pair = await factory.getPair(tk1.address, tk2.address);
             expect(await tk1.balanceOf(pair)).to.eq(ethers.utils.parseEther("500"));
             expect(await tk2.balanceOf(pair)).to.eq(ethers.utils.parseEther("500"));
-        })  
-    })
+        });
+    });
 
     describe("Flip", () => {
-        it.only("Should flip correctly.", async () => {
+        it("Should flip correctly.", async () => {
             const { flip, factory, tk1, tk2, owner } = await loadFixture(
                 deployFlipFixture
             );
@@ -182,6 +179,5 @@ describe("Flip", function () {
             console.log("poolToken1Balance: ", poolToken1Balance.toString());
             console.log("poolToken2Balance: ", poolToken2Balance.toString());
         });
-
     });
 });

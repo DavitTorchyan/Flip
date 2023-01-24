@@ -68,8 +68,8 @@ contract Flip {
         uint256 timeout
     ) public {
         factory.createPair(_token1, _token2);
-        token1.approve(UNISWAP_V2_ROUTER, 1000 * 10e18);
-        token2.approve(UNISWAP_V2_ROUTER, 1000 * 10e18);
+        token1.approve(UNISWAP_V2_ROUTER, token1Amount);
+        token2.approve(UNISWAP_V2_ROUTER, token2Amount);
         router.addLiquidity(
             address(_token1),
             address(_token2),
